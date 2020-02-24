@@ -92,6 +92,7 @@ hostapd_common_add_device_config() {
 	config_add_boolean country_ie doth
 	config_add_string require_mode
 	config_add_boolean legacy_rates
+	config_add_boolean vendor_vht
 
 	config_add_string acs_chan_bias
 	config_add_array hostapd_options
@@ -106,7 +107,7 @@ hostapd_prepare_device_config() {
 	local base="${config%%.conf}"
 	local base_cfg=
 
-	json_get_vars country country_ie beacon_int:100 doth require_mode legacy_rates acs_chan_bias
+	json_get_vars country country_ie beacon_int:100 doth require_mode legacy_rates acs_chan_bias vendor_vht
 
 	hostapd_set_log_options base_cfg
 
@@ -136,6 +137,7 @@ hostapd_prepare_device_config() {
 	[ "$hwmode" = "g" ] && {
 		[ "$legacy_rates" -eq 0 ] && set_default rate_list "6000 9000 12000 18000 24000 36000 48000 54000"
 		[ -n "$require_mode" ] && set_default basic_rate_list "6000 12000 24000"
+		[ -n "$vendor_vht" ] && append base_cfg "vendor_vht=$vendor_vht" "$N"
 	}
 
 	case "$require_mode" in
@@ -168,7 +170,7 @@ EOF
 
 hostapd_common_add_bss_config() {
 	config_add_string 'bssid:macaddr' 'ssid:string'
-	config_add_boolean wds wmm uapsd hidden
+	config_add_boolean wds wmm uapsd hidden utf8_ssid
 
 	config_add_int maxassoc max_inactivity
 	config_add_boolean disassoc_low_ack isolate short_preamble
@@ -212,13 +214,18 @@ hostapd_common_add_bss_config() {
 
 	config_add_string wpa_psk_file
 
+	config_add_int multi_ap
+
 	config_add_boolean wps_pushbutton wps_label ext_registrar wps_pbc_in_m1
 	config_add_int wps_ap_setup_locked wps_independent
 	config_add_string wps_device_type wps_device_name wps_manufacturer wps_pin
+	config_add_string multi_ap_backhaul_ssid multi_ap_backhaul_key
 
 	config_add_boolean ieee80211v wnm_sleep_mode bss_transition
 	config_add_int time_advertisement
 	config_add_string time_zone
+
+	config_add_boolean ieee80211k rrm_neighbor_report rrm_beacon_report
 
 	config_add_boolean ieee80211r pmk_r1_push ft_psk_generate_local ft_over_ds
 	config_add_int r0_key_lifetime reassociation_deadline
@@ -258,10 +265,11 @@ hostapd_set_bss_options() {
 		maxassoc max_inactivity disassoc_low_ack isolate auth_cache \
 		wps_pushbutton wps_label ext_registrar wps_pbc_in_m1 wps_ap_setup_locked \
 		wps_independent wps_device_type wps_device_name wps_manufacturer wps_pin \
-		macfilter ssid wmm uapsd hidden short_preamble rsn_preauth \
+		macfilter ssid utf8_ssid wmm uapsd hidden short_preamble rsn_preauth \
 		iapp_interface eapol_version dynamic_vlan ieee80211w nasid \
 		acct_server acct_secret acct_port acct_interval \
-		bss_load_update_period chan_util_avg_period sae_require_mfp
+		bss_load_update_period chan_util_avg_period sae_require_mfp \
+		multi_ap multi_ap_backhaul_ssid multi_ap_backhaul_key
 
 	set_default isolate 0
 	set_default maxassoc 0
@@ -277,7 +285,9 @@ hostapd_set_bss_options() {
 	set_default acct_port 1813
 	set_default bss_load_update_period 60
 	set_default chan_util_avg_period 600
-	
+	set_default utf8_ssid 1
+	set_default multi_ap 0
+
 	append bss_conf "ctrl_interface=/var/run/hostapd"
 	if [ "$isolate" -gt 0 ]; then
 		append bss_conf "ap_isolate=$isolate" "$N"
@@ -296,6 +306,8 @@ hostapd_set_bss_options() {
 	append bss_conf "wmm_enabled=$wmm" "$N"
 	append bss_conf "ignore_broadcast_ssid=$hidden" "$N"
 	append bss_conf "uapsd_advertisement_enabled=$uapsd" "$N"
+	append bss_conf "utf8_ssid=$utf8_ssid" "$N"
+	append bss_conf "multi_ap=$multi_ap" "$N"
 
 	[ "$tdls_prohibit" -gt 0 ] && append bss_conf "tdls_prohibit=$tdls_prohibit" "$N"
 
@@ -418,6 +430,9 @@ hostapd_set_bss_options() {
 	[ "$wps_pushbutton" -gt 0 ] && append config_methods push_button
 	[ "$wps_label" -gt 0 ] && append config_methods label
 
+	# WPS not possible on Multi-AP backhaul-only SSID
+	[ "$multi_ap" = 1 ] && wps_possible=
+
 	[ -n "$wps_possible" -a -n "$config_methods" ] && {
 		set_default ext_registrar 0
 		set_default wps_device_type "6-0050F204-1"
@@ -440,6 +455,19 @@ hostapd_set_bss_options() {
 		append bss_conf "wps_independent=$wps_independent" "$N"
 		[ -n "$wps_ap_setup_locked" ] && append bss_conf "ap_setup_locked=$wps_ap_setup_locked" "$N"
 		[ "$wps_pbc_in_m1" -gt 0 ] && append bss_conf "pbc_in_m1=$wps_pbc_in_m1" "$N"
+		[ "$multi_ap" -gt 0 ] && [ -n "$multi_ap_backhaul_ssid" ] && {
+			append bss_conf "multi_ap_backhaul_ssid=\"$multi_ap_backhaul_ssid\"" "$N"
+			if [ -z "$multi_ap_backhaul_key" ]; then
+				:
+			elif [ ${#multi_ap_backhaul_key} -lt 8 ]; then
+				wireless_setup_vif_failed INVALID_WPA_PSK
+				return 1
+			elif [ ${#multi_ap_backhaul_key} -eq 64 ]; then
+				append bss_conf "multi_ap_backhaul_wpa_psk=$multi_ap_backhaul_key" "$N"
+			else
+				append bss_conf "multi_ap_backhaul_wpa_passphrase=$multi_ap_backhaul_key" "$N"
+			fi
+		}
 	}
 
 	append bss_conf "ssid=$ssid" "$N"
@@ -463,6 +491,17 @@ hostapd_set_bss_options() {
 		[ -n "$time_zone" ] && append bss_conf "time_zone=$time_zone" "$N"
 		append bss_conf "wnm_sleep_mode=$wnm_sleep_mode" "$N"
 		append bss_conf "bss_transition=$bss_transition" "$N"
+	fi
+
+	json_get_vars ieee80211k
+	set_default ieee80211k 0
+	if [ "$ieee80211k" -eq "1" ]; then
+		json_get_vars rrm_neighbor_report rrm_beacon_report
+
+		set_default rrm_neighbor_report 1
+		set_default rrm_beacon_report 1
+		append bss_conf "rrm_neighbor_report=$rrm_neighbor_report" "$N"
+		append bss_conf "rrm_beacon_report=$rrm_beacon_report" "$N"
 	fi
 
 	if [ "$wpa" -ge "1" ]; then
@@ -516,7 +555,14 @@ hostapd_set_bss_options() {
 			append bss_conf "rsn_preauth=1" "$N"
 			append bss_conf "rsn_preauth_interfaces=$network_bridge" "$N"
 		else
-			set_default auth_cache 0
+			case "$auth_type" in
+			sae|psk-sae|owe)
+				set_default auth_cache 1
+			;;
+			*)
+				set_default auth_cache 0
+			;;
+			esac
 		fi
 
 		append bss_conf "okc=$auth_cache" "$N"
@@ -638,13 +684,16 @@ wpa_supplicant_prepare_interface() {
 
 	_wpa_supplicant_common "$1"
 
-	json_get_vars mode wds
+	json_get_vars mode wds multi_ap
 
 	[ -n "$network_bridge" ] && {
 		fail=
 		case "$mode" in
 			adhoc)
 				fail=1
+			;;
+			sta)
+				[ "$wds" = 1 -o "$multi_ap" = 1 ] || fail=1
 			;;
 		esac
 
@@ -670,6 +719,12 @@ wpa_supplicant_prepare_interface() {
 		country_str="country=$country"
 	}
 
+	multiap_flag_file="${_config}.is_multiap"
+	if [ "$multi_ap" = "1" ]; then
+		touch "$multiap_flag_file"
+	else
+		[ -e "$multiap_flag_file" ] && rm "$multiap_flag_file"
+	fi
 	wpa_supplicant_teardown_interface "$ifname"
 	cat > "$_config" <<EOF
 $ap_scan
@@ -711,9 +766,20 @@ wpa_supplicant_add_network() {
 	json_get_vars \
 		ssid bssid key \
 		basic_rate mcast_rate \
-		ieee80211w ieee80211r
+		ieee80211w ieee80211r \
+		multi_ap
+
+	case "$auth_type" in
+		sae|owe|eap192|eap-eap192)
+			set_default ieee80211w 2
+		;;
+		psk-sae)
+			set_default ieee80211w 1
+		;;
+	esac
 
 	set_default ieee80211r 0
+	set_default multi_ap 0
 
 	local key_mgmt='NONE'
 	local enc_str=
@@ -747,15 +813,21 @@ wpa_supplicant_add_network() {
 
 	[ "$_w_mode" = "adhoc" -o "$_w_mode" = "mesh" ] && append network_data "$_w_modestr" "$N$T"
 
+	[ "$multi_ap" = 1 -a "$_w_mode" = "sta" ] && append network_data "multi_ap_backhaul_sta=1" "$N$T"
+
 	case "$auth_type" in
 		none) ;;
 		owe)
 			hostapd_append_wpa_key_mgmt
+			key_mgmt="$wpa_key_mgmt"
 		;;
 		wep)
 			local wep_keyidx=0
 			hostapd_append_wep_key network_data
 			append network_data "wep_tx_keyidx=$wep_keyidx" "$N$T"
+		;;
+		wps)
+			key_mgmt='WPS'
 		;;
 		psk|sae|psk-sae)
 			local passphrase
@@ -864,7 +936,10 @@ wpa_supplicant_add_network() {
 		append network_data "mcast_rate=$mc_rate" "$N$T"
 	}
 
-	cat >> "$_config" <<EOF
+	if [ "$key_mgnt" = "WPS" ]; then
+		echo "wps_cred_processing=1" >> "$_config"
+	else
+		cat >> "$_config" <<EOF
 network={
 	$scan_ssid
 	ssid="$ssid"
@@ -872,6 +947,7 @@ network={
 	$network_data
 }
 EOF
+	fi
 	return 0
 }
 
@@ -880,7 +956,7 @@ wpa_supplicant_run() {
 
 	_wpa_supplicant_common "$ifname"
 
-	/usr/sbin/wpa_supplicant -B \
+	/usr/sbin/wpa_supplicant -B -s \
 		${network_bridge:+-b $network_bridge} \
 		-P "/var/run/wpa_supplicant-${ifname}.pid" \
 		-D ${_w_driver:-wext} \

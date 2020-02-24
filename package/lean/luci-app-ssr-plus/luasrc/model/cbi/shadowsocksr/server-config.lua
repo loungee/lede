@@ -6,16 +6,16 @@ local shadowsocksr = "shadowsocksr"
 local sid = arg[1]
 
 local encrypt_methods = {
-	"table",
-	"rc4",
 	"rc4-md5",
 	"rc4-md5-6",
+	"rc4",
+	"table",
 	"aes-128-cfb",
 	"aes-192-cfb",
 	"aes-256-cfb",
 	"aes-128-ctr",
 	"aes-192-ctr",
-	"aes-256-ctr",	
+	"aes-256-ctr",
 	"bf-cfb",
 	"camellia-128-cfb",
 	"camellia-192-cfb",
@@ -32,27 +32,19 @@ local encrypt_methods = {
 
 local protocol = {
 	"origin",
-	"verify_deflate",
-	"auth_sha1_v4",
-	"auth_aes128_sha1",
-	"auth_aes128_md5",
-	"auth_chain_a",
 }
 
 obfs = {
 	"plain",
 	"http_simple",
 	"http_post",
-	"random_head",
-	"tls1.2_ticket_auth",
-	"tls1.2_ticket_fastauth",
 }
 
 m = Map(shadowsocksr, translate("Edit ShadowSocksR Server"))
 
 m.redirect = luci.dispatcher.build_url("admin/services/shadowsocksr/server")
 if m.uci:get(shadowsocksr, sid) ~= "server_config" then
-	luci.http.redirect(m.redirect) 
+	luci.http.redirect(m.redirect)
 	return
 end
 
@@ -66,11 +58,6 @@ s.addremove   = false
 
 o = s:option(Flag, "enable", translate("Enable"))
 o.default = 1
-o.rmempty = false
-
-o = s:option(Value, "server", translate("Server Address"))
-o.datatype = "ipaddr"
-o.default = "0.0.0.0"
 o.rmempty = false
 
 o = s:option(Value, "server_port", translate("Server Port"))

@@ -20,7 +20,7 @@ define KernelPackage/pwm-mediatek-ramips
   AUTOLOAD:=$(call AutoProbe,pwm-mediatek-ramips)
 endef
 
-define KernelPackage/pwm-mediatek/description
+define KernelPackage/pwm-mediatek-ramips/description
   Kernel modules for MediaTek Pulse Width Modulator
 endef
 
@@ -116,7 +116,7 @@ $(eval $(call KernelPackage,hsdma-mtk))
 
 define KernelPackage/sound-mt7620
   TITLE:=MT7620 PCM/I2S Alsa Driver
-  DEPENDS:=@TARGET_ramips +kmod-sound-soc-core +kmod-regmap +kmod-dma-ralink @!TARGET_ramips_rt288x
+  DEPENDS:=@TARGET_ramips +kmod-sound-soc-core +kmod-regmap-i2c +kmod-dma-ralink @!TARGET_ramips_rt288x
   KCONFIG:= \
 	CONFIG_SND_RALINK_SOC_I2S \
 	CONFIG_SND_SIMPLE_CARD \
