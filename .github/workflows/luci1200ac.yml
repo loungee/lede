@@ -10,9 +10,9 @@
 name: 1200ac-CI
 
 on:
-  push:
-    branches: 
-      - master
+  # push:
+  #   branches: 
+  #     - master
   # schedule:
   #   - cron: 0 20 * * *
   # release:
