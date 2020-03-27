@@ -1,10 +1,14 @@
 name: test-CI
 on:
-  push:
-    branches: 
-      - master
-  schedule:
-    - cron: 0 0 * * 6
+  # push:
+  #   branches: 
+  #     - master
+  # schedule:
+  #   - cron: 0 0 * * 6
+  watch:
+    types: started
+    branches:
+       - master
 jobs:
   build:
     runs-on: ubuntu-latest
