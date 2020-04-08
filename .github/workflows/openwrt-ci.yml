@@ -49,7 +49,6 @@ jobs:
           CONFIG_TARGET_mvebu=y
           CONFIG_TARGET_mvebu_cortexa9=y
           CONFIG_TARGET_mvebu_cortexa9_DEVICE_linksys_wrt1200ac=y
-          CONFIG_TARGET_IMAGES_GZIP=y
           CONFIG_LIBCURL_COOKIES=y
           CONFIG_LIBCURL_FILE=y
           CONFIG_LIBCURL_FTP=y
@@ -58,35 +57,6 @@ jobs:
           CONFIG_LIBCURL_OPENSSL=y
           CONFIG_LIBCURL_PROXY=y
           CONFIG_NFS_KERNEL_SERVER_V4=y
-          CONFIG_NGINX_HEADERS_MORE=y
-          CONFIG_NGINX_HTTP_ACCESS=y
-          CONFIG_NGINX_HTTP_AUTH_BASIC=y
-          CONFIG_NGINX_HTTP_AUTOINDEX=y
-          CONFIG_NGINX_HTTP_BROWSER=y
-          CONFIG_NGINX_HTTP_CACHE=y
-          CONFIG_NGINX_HTTP_CHARSET=y
-          CONFIG_NGINX_HTTP_EMPTY_GIF=y
-          CONFIG_NGINX_HTTP_FASTCGI=y
-          CONFIG_NGINX_HTTP_GEO=y
-          CONFIG_NGINX_HTTP_GZIP=y
-          CONFIG_NGINX_HTTP_LIMIT_CONN=y
-          CONFIG_NGINX_HTTP_LIMIT_REQ=y
-          CONFIG_NGINX_HTTP_MAP=y
-          CONFIG_NGINX_HTTP_MEMCACHED=y
-          CONFIG_NGINX_HTTP_PROXY=y
-          CONFIG_NGINX_HTTP_REFERER=y
-          CONFIG_NGINX_HTTP_REWRITE=y
-          CONFIG_NGINX_HTTP_SCGI=y
-          CONFIG_NGINX_HTTP_SPLIT_CLIENTS=y
-          CONFIG_NGINX_HTTP_SSI=y
-          CONFIG_NGINX_HTTP_UPSTREAM_HASH=y
-          CONFIG_NGINX_HTTP_UPSTREAM_IP_HASH=y
-          CONFIG_NGINX_HTTP_UPSTREAM_KEEPALIVE=y
-          CONFIG_NGINX_HTTP_UPSTREAM_LEAST_CONN=y
-          CONFIG_NGINX_HTTP_USERID=y
-          CONFIG_NGINX_HTTP_UWSGI=y
-          CONFIG_NGINX_NAXSI=y
-          CONFIG_NGINX_PCRE=y
           CONFIG_OPENVPN_openssl_ENABLE_DEF_AUTH=y
           CONFIG_OPENVPN_openssl_ENABLE_FRAGMENT=y
           CONFIG_OPENVPN_openssl_ENABLE_LZ4=y
@@ -124,6 +94,7 @@ jobs:
           CONFIG_PACKAGE_kmod-ipt-nat6=y
           CONFIG_PACKAGE_kmod-iptunnel=y
           CONFIG_PACKAGE_kmod-iptunnel4=y
+          # CONFIG_PACKAGE_kmod-nf-conntrack-netlink is not set
           CONFIG_PACKAGE_kmod-nf-nat6=y
           CONFIG_PACKAGE_kmod-sit=y
           CONFIG_PACKAGE_kmod-tun=y
@@ -152,7 +123,6 @@ jobs:
           CONFIG_PACKAGE_libzstd=y
           CONFIG_PACKAGE_luci-app-advanced-reboot=y
           CONFIG_PACKAGE_luci-app-hd-idle=y
-          CONFIG_PACKAGE_luci-app-kodexplorer=y
           CONFIG_PACKAGE_luci-app-nfs=y
           # CONFIG_PACKAGE_luci-app-nlbwmon is not set
           CONFIG_PACKAGE_luci-app-openvpn-server=y
@@ -163,7 +133,6 @@ jobs:
           # CONFIG_PACKAGE_luci-app-unblockmusic is not set
           CONFIG_PACKAGE_luci-i18n-advanced-reboot-zh-cn=y
           CONFIG_PACKAGE_luci-i18n-hd-idle-zh-cn=y
-          CONFIG_PACKAGE_luci-i18n-kodexplorer-zh-cn=y
           CONFIG_PACKAGE_luci-i18n-nfs-zh-cn=y
           CONFIG_PACKAGE_luci-i18n-openvpn-server-zh-cn=y
           CONFIG_PACKAGE_luci-i18n-qbittorrent-zh-cn=y
@@ -174,7 +143,6 @@ jobs:
           CONFIG_PACKAGE_nfs-kernel-server-utils=y
           CONFIG_PACKAGE_nfs-utils=y
           CONFIG_PACKAGE_nfs-utils-libs=y
-          CONFIG_PACKAGE_nginx=y
           # CONFIG_PACKAGE_nlbwmon is not set
           # CONFIG_PACKAGE_node is not set
           CONFIG_PACKAGE_odhcp6c=y
@@ -183,16 +151,6 @@ jobs:
           CONFIG_PACKAGE_odhcpd_ipv6only_ext_cer_id=0
           CONFIG_PACKAGE_openvpn-easy-rsa=y
           CONFIG_PACKAGE_openvpn-openssl=y
-          CONFIG_PACKAGE_php7=y
-          CONFIG_PACKAGE_php7-fpm=y
-          CONFIG_PACKAGE_php7-mod-curl=y
-          CONFIG_PACKAGE_php7-mod-gd=y
-          CONFIG_PACKAGE_php7-mod-iconv=y
-          CONFIG_PACKAGE_php7-mod-json=y
-          CONFIG_PACKAGE_php7-mod-mbstring=y
-          CONFIG_PACKAGE_php7-mod-opcache=y
-          CONFIG_PACKAGE_php7-mod-session=y
-          CONFIG_PACKAGE_php7-mod-zip=y
           CONFIG_PACKAGE_python=y
           CONFIG_PACKAGE_python-base=y
           CONFIG_PACKAGE_python-codecs=y
@@ -222,15 +180,12 @@ jobs:
           CONFIG_PACKAGE_samba36-server=y
           # CONFIG_PACKAGE_shadowsocksr-libev-server is not set
           CONFIG_PACKAGE_terminfo=y
-          CONFIG_PACKAGE_zoneinfo-asia=y
-          CONFIG_PHP7_LIBFREETYPE=y
           CONFIG_RPCBIND_LIBWRAP=y
           CONFIG_RPCBIND_RMTCALLS=y
           CONFIG_SQLITE_FTS3=y
           CONFIG_SQLITE_RTREE=y
           # CONFIG_UnblockNeteaseMusic_Go is not set
           # CONFIG_UnblockNeteaseMusic_NodeJS is not set
-          CONFIG_PACKAGE_kmod-nf-conntrack-netlink=y
           CONFIG_PACKAGE_libcares=y
           CONFIG_PACKAGE_libevent2=y
           CONFIG_PACKAGE_libhttp-parser=y
