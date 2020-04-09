@@ -191,6 +191,7 @@ jobs:
           CONFIG_PACKAGE_libhttp-parser=y
           CONFIG_PACKAGE_libnghttp2=y
           CONFIG_PACKAGE_libuv=y
+          CONFIG_PACKAGE_luci-app-transmission=y
           EOF
           sed -i 's/^[ \t]*//g' ./.config
           make defconfig
