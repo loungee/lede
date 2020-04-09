@@ -69,7 +69,6 @@ jobs:
           # CONFIG_PACKAGE_UnblockNeteaseMusic is not set
           # CONFIG_PACKAGE_UnblockNeteaseMusicGo is not set
           # CONFIG_PACKAGE_luci-app-unblockmusic is not set
-          # CONFIG_PACKAGE_node is not set
           EOF
           sed -i 's/^[ \t]*//g' ./.config
           make defconfig
